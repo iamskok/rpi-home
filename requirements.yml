@@ -1,0 +1,6 @@
+---
+- src: geerlingguy.pip
+- src: geerlingguy.docker_arm
+- src: viasite-ansible.zsh
+- src: morgangraphics.ansible_role_nvm
+- src: ocha.yarn

@@ -1,0 +1,6 @@
+{# File: /home/pi/containers/pihole-unbound/hosts #}
+{% for item in pihole_unbound_hosts %}
+{% for key, value in item.items() %}
+{{ key }} {{ value }}
+{% endfor %}
+{% endfor %}

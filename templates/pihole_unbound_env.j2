@@ -1,0 +1,4 @@
+{# File: /home/pi/containers/pihole-unbound/.env #}
+{% for key, value in pihole_unbound_env[0].items() %}
+{{ key }}={{ value }}
+{% endfor %}

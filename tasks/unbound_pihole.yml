@@ -1,0 +1,41 @@
+- name: Create Unbound PiHole directory
+  file:
+    path: "{{ containers_path }}/pihole-unbound/"
+    state: directory
+
+- name: Copy Unbound PiHole `docker-compose.yml`
+  copy:
+    src: pihole-unbound/docker-compose.yml
+    dest: "{{ containers_path }}/pihole-unbound/"
+
+- name: Template `hosts` for Unbound PiHole
+  template:
+    src: templates/pihole_unbound_hosts.j2
+    dest: "{{ containers_path }}/pihole-unbound/hosts"
+  vars:
+    envs: "{{ pihole_unbound_hosts }}"
+
+- name: Create Unbound PiHole `/etc-dnsmasq.d` directory
+  file:
+    path: "{{ containers_path }}/pihole-unbound/etc-dnsmasq.d/"
+    state: directory
+
+- name: Template custom DNS records for Unbound PiHole
+  template:
+    src: templates/pihole_unbound_custom_dns_records.j2
+    dest: "{{ containers_path }}/pihole-unbound/etc-dnsmasq.d/custom-dns-records.conf"
+  vars:
+    dns_records: "{{ pihole_unbound_custom_dns_records }}"
+
+- name: Template `.env` for Unbound PiHole
+  template:
+    src: templates/pihole_unbound_env.j2
+    dest: "{{ containers_path }}/pihole-unbound/.env"
+  vars:
+    envs: "{{ pihole_unbound_env }}"
+
+- name: Create and start PiHole service
+  command: "
+    docker-compose -f {{ containers_path }}/pihole-unbound/docker-compose.yml \
+    --env-file {{ containers_path }}/pihole-unbound/.env up -d
+  "

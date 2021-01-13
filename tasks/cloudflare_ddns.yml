@@ -1,0 +1,12 @@
+- name: Create and start Clouflare DDNS service
+  community.general.docker_container:
+    name: cloudflare-ddns
+    image: oznu/cloudflare-ddns:arm32v6
+    restart_policy: unless-stopped
+    container_default_behavior: compatibility
+    state: started
+    env:
+      API_KEY: "{{ cloudflare_ddns_api_key }}"
+      ZONE: "{{ cloudflare_ddns_zone }}"
+      SUBDOMAIN: "{{ cloudflare_ddns_subdomain }}"
+      CRON: "{{ cloudflare_ddns_cron }}"

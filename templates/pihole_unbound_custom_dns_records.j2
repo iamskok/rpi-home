@@ -1,0 +1,4 @@
+{# File: /home/pi/containers/pihole-unbound/etc-dnsmasq.d/custom-dns-records.conf #}
+{% for item in pihole_unbound_custom_dns_records %}
+address=/{{ item["domain"] }}/{{ item["ip"] }}
+{% endfor %}

@@ -1,0 +1,28 @@
+- name: Git checkout Speedtest Analyser
+  git:
+    repo: https://github.com/roest01/docker-speedtest-analyser
+    dest: "{{ containers_path }}/speedtest-analyser"
+    force: "yes"
+
+- name: Build Speedtest Analyser image
+  community.general.docker_image:
+    name: speedtest-analyser
+    source: build
+    build:
+      path: "{{ containers_path }}/speedtest-analyser"
+      pull: "no"
+
+- name: Start Speedtest Analyser service
+  community.general.docker_container:
+    name: speedtest-analyser
+    image: speedtest-analyser
+    restart_policy: unless-stopped
+    container_default_behavior: compatibility
+    state: started
+    ports:
+      - "{{ speedtest_analyser_http_port }}:80"
+      - "{{ speedtest_analyser_https_port }}:443"
+    volumes:
+      - "{{ containers_path }}/speedtest-analyser/data:/var/www/html/data:rw"
+    env:
+      CRONJOB_ITERATION: "{{ speedtest_analyser_cronjob_iteration }}"

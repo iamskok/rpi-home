@@ -1,0 +1,38 @@
+- name: Set hostname
+  hostname:
+    name: RPi01
+
+- name: Ensure the locale exists
+  locale_gen:
+    name: en_US.UTF-8
+    state: present
+
+- name: Set default locale
+  command: localectl set-locale LANG=en_US.UTF-8
+
+- name: Set timezone
+  community.general.timezone:
+    name: America/New_York
+
+- name: Set WiFi country
+  command: raspi-config nonint do_wifi_country US
+
+- name: Set authorized key
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Enable root login over SSH
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin yes"
+    state: present
+
+- name: Disable SSH password authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    state: present

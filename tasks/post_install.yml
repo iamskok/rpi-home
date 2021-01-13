@@ -1,0 +1,16 @@
+- name: Upgrade apt packages
+  apt:
+    upgrade: "yes"
+    update_cache: yes
+
+- name: Install packages
+  apt:
+    name: "{{ apt_packages }}"
+
+- name: Reload zsh
+  command: "/bin/zsh -c 'source ~/.zshrc'"
+
+- name: Stop and start ssh
+  service:
+    name: ssh
+    state: restarted

@@ -1,0 +1,32 @@
+- hosts: all
+  become: yes
+  vars_files:
+    - vars/main.yml
+
+  pre_tasks:
+    - name: Set defaults
+      include: tasks/defaults.yml
+
+  roles:
+    - role: geerlingguy.pip
+    - role: geerlingguy.docker_arm
+    - role: viasite-ansible.zsh
+    - role: morgangraphics.ansible_role_nvm
+    - role: ocha.yarn
+
+  tasks:
+    - name: Portainer
+      include: tasks/portainer.yml
+
+    - name: Unbound PiHole
+      include: tasks/unbound_pihole.yml
+
+    - name: Speedtest Analyser
+      include: tasks/speedtest_analyser.yml
+
+    - name: Cloudflare DDNS
+      include: tasks/cloudflare_ddns.yml
+
+  post_tasks:
+    - name: Post Install
+      include: tasks/post_install.yml

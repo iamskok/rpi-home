@@ -1,0 +1,12 @@
+- name: Create and start Portainer service
+  community.general.docker_container:
+    name: portainer
+    image: portainer/portainer-ce:linux-arm
+    restart_policy: unless-stopped
+    container_default_behavior: compatibility
+    state: started
+    ports:
+      - "{{ portainer_http_port }}:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "{{ containers_path }}/portainer/data:/data"
