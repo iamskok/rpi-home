@@ -1,0 +1,32 @@
+- name: Create Unbound directory
+  file:
+    path: "{{ containers_path }}/unbound/"
+    state: directory
+
+- name: Copy Unbound `Dockerfile`
+  copy:
+    src: unbound/Dockerfile
+    dest: "{{ containers_path }}/unbound/Dockerfile"
+
+- name: Copy Unbound `root.key`
+  copy:
+    src: files/unbound-root.key
+    dest: "{{ containers_path }}/unbound/root.key"
+
+- name: Template `unbound.conf`
+  template:
+    src: templates/unbound_conf.j2
+    dest: "{{ containers_path }}/unbound/unbound.conf"
+  # vars:
+  #   envs: "{{ unbound_conf }}"
+
+- name: Build Unbound image
+  community.general.docker_image:
+    build:
+      # path: "{{ containers_path }}/unbound/Dockerfile"
+      path: "{{ containers_path }}/unbound/"
+      # path: Dockerfile
+      pull: no
+    name: unbound
+    source: build
+

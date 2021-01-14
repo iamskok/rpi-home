@@ -18,6 +18,9 @@
     - name: Portainer
       include: tasks/portainer.yml
 
+    - name: Unbound
+      include: tasks/unbound.yml
+
     - name: Unbound PiHole
       include: tasks/unbound_pihole.yml
 
