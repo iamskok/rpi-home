@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.12
 
 ENV ROOT_HINTS https://www.internic.net/domain/named.root
 
