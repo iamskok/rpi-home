@@ -1,52 +1,91 @@
 server:
-  verbosity: 1
-  logfile: "/etc/unbound/unbound.log"
+  verbosity: {{ unbound_config[0]["verbosity"] | default(1) }}
+  logfile: {{ unbound_config[0]["logfile"] | default("/etc/unbound/unbound.log") }}
 
-  interface: 0.0.0.0
-  port: 53
-  do-ip4: yes
-  do-udp: yes
-  do-tcp: yes
+  interface: {{ unbound_config[0]["interface"] | default("0.0.0.0") }}
+  port: {{ unbound_config[0]["port"] | default(53) }}
+  do-ip4: {{ unbound_config[0]["do_ip4"] | default("yes") }}
+  do-udp: {{ unbound_config[0]["do_udp"] | default("yes") }}
+  do-tcp: {{ unbound_config[0]["do_tcp"] | default("yes") }}
 
   # May be set to yes if you have IPv6 connectivity
-  do-ip6: no
+  do-ip6: {{ unbound_config[0]["do_ip6"] | default("no") }}
 
   # You want to leave this to no unless you have *native* IPv6. With 6to4 and
   # Terredo tunnels your web browser should favor IPv4 for the same reasons
-  prefer-ip6: no
+  prefer-ip6: {{ unbound_config[0]["prefer-ip6"] | default("no") }}
 
   # Use this only when you downloaded the list of primary root servers!
   # If you use the default dns-root-data package, unbound will find it automatically
-  root-hints: "/etc/unbound/root.hints"
+  root-hints: {{ unbound_config[0]["root_hints"] | default("/etc/unbound/root.hints") }}
 
   # Trust glue only if it is within the server's authority
-  harden-glue: yes
+  harden-glue: {{ unbound_config[0]["harden_glue"] | default("yes") }}
 
   # Require DNSSEC data for trust-anchored zones, if such data is absent, the zone becomes BOGUS
-  harden-dnssec-stripped: yes
+  harden-dnssec-stripped: {{ unbound_config[0]["harden_dnssec_stripped"] | default("yes") }}
 
   # Key for the root server so DNSSEC can be validated. We need to tell Unbound that we trust the
   # root server so it can start to develop a chain of trust down to the hostname we want resolved
   # and validated using DNSSEC.
-  auto-trust-anchor-file: "/etc/unbound/root.key"
+  auto-trust-anchor-file: {{ unbound_config[0]["auto_trust_anchor_file"] | default("/etc/unbound/root.key") }}
 
-  # Don't use Capitalization randomization as it known to cause DNSSEC issues sometimes
-  # see https://discourse.pi-hole.net/t/unbound-stubby-or-dnscrypt-proxy/9378 for further details
-  use-caps-for-id: no
+  # Use 0x20-encoded random bits in the query to foil spoof attempts.
+  # http://tools.ietf.org/html/draft-vixie-dnsext-dns0x20-00
+  # While upper and lower case letters are allowed in domain names, no significance
+  # is attached to the case. That is, two names with the same spelling but
+  # different case are to be treated as if identical. This means google.com is the
+  # same as GooGle.com which is the same as GOOGLE.COM.
+  use-caps-for-id: {{ unbound_config[0]["use_caps_for_id"] | default("yes") }}
 
-  # Reduce EDNS reassembly buffer size.
-  # Suggested by the unbound man page to reduce fragmentation reassembly problems
-  edns-buffer-size: 1472
+  # If nonzero, unwanted replies are not only reported in statistics, but also
+  # a running total is kept per thread. If it reaches the threshold, a warning
+  # is printed and a defensive action is taken, the cache is cleared to flush
+  # potential poison out of it.
+  unwanted-reply-threshold: {{ unbound_config[0]["unwanted_reply_threshold"] | default(10000) }}
+
+  # Should additional section of secure message also be kept clean of unsecure
+  # data. Useful to shield the users of this validator from potential bogus
+  # data in the additional section. All unsigned data in the additional section
+  # is removed from secure messages.
+  val-clean-additional: {{ unbound_config[0]["val_clean_additional"] | default("yes") }}
+
+  # Reduce EDNS reassembly buffer size. Suggested by the unbound man page
+  # to reduce fragmentation reassembly problems
+  edns-buffer-size: {{ unbound_config[0]["edns_buffer_size"] | default(1472) }}
 
   # Perform prefetching of close to expired message cache entries
   # This only applies to domains that have been frequently queried
-  prefetch: yes
+  prefetch: {{ unbound_config[0]["prefetch"] | default("yes") }}
 
-  # One thread should be sufficient, can be increased on beefy machines. In reality for most users running on small networks or on a single machine, it should be unnecessary to seek performance enhancement by increasing num-threads above 1.
-  num-threads: 1
+  # The time to live (TTL) value lower bound, in seconds. Default 0.
+  # If more than an hour could easily give trouble due to stale data.
+  cache-min-ttl: {{ unbound_config[0]["cache_min_ttl"] | default(3600) }}
+
+  # The time to live (TTL) value cap for RRsets and messages in the
+  # cache. Items are not cached for longer. In seconds.
+  cache-max-ttl: {{ unbound_config[0]["cache_max_ttl"] | default(86400) }}
 
   # Ensure kernel buffer is large enough to not lose messages in traffic spikes
-  so-rcvbuf: 1m
+  so-rcvbuf: {{ unbound_config[0]["so_rcvbuf"] | default("1m") }}
+
+  # Number of threads to create. 1 disables threading. This should equal the
+  # number of CPU cores in the machine.
+  num-threads: {{ unbound_config[0]["num_threads"] | default(4) }}
+
+  # The number of slabs to use for cache and must be a power of 2 times the
+  # number of num-threads set above. More slabs reduce lock contention, but
+  # fragment memory usage.
+  msg-cache-slabs: {{ unbound_config[0]["msg_cache_slabs"] | default(8) }}
+  rrset-cache-slabs: {{ unbound_config[0]["rrset_cache_slabs"] | default(8) }}
+  infra-cache-slabs: {{ unbound_config[0]["infra_cache_slabs"] | default(8) }}
+  key-cache-slabs: {{ unbound_config[0]["key_cache_slabs"] | default(8) }}
+
+  # Increase the memory size of the cache. Use roughly twice as much rrset cache
+  # memory as you use msg cache memory. Due to malloc overhead, the total memory
+  # usage is likely to rise to double (or 2.5x) the total cache memory.
+  rrset-cache-size: {{ unbound_config[0]["rrset_cache_size"] | default("256m") }}
+  msg-cache-size: {{ unbound_config[0]["msg_cache_size"] | default("128m") }}
 
   # Ensure privacy of local IP ranges
   private-address: 192.168.0.0/16
@@ -56,6 +95,6 @@ server:
   private-address: fd00::/8
   private-address: fe80::/10
 
-  # Specify the interfaces to answer queries from by IP address. The default, is to listen on localhost.
-  # Allow access from private Docker network.
-  access-control: 10.0.0.0/8 allow
+  # Specify the interfaces to answer queries from by IP address.The default, is to
+  # listen on localhost. Allow access from private Docker network.
+  access-control: {{ unbound_config[0]["access_control"] | default("10.0.0.0/8 allow") }}

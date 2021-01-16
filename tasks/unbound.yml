@@ -17,15 +17,13 @@
   template:
     src: templates/unbound_conf.j2
     dest: "{{ containers_path }}/unbound/unbound.conf"
-  # vars:
-  #   envs: "{{ unbound_conf }}"
+  vars:
+    envs: "{{ unbound_config }}"
 
 - name: Build Unbound image
   community.general.docker_image:
     build:
-      # path: "{{ containers_path }}/unbound/Dockerfile"
       path: "{{ containers_path }}/unbound/"
-      # path: Dockerfile
       pull: no
     name: unbound
     source: build

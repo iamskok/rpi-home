@@ -33,14 +33,13 @@ zsh_antigen_bundles:
   - zsh-users/zsh-autosuggestions
   - unixorn/autoupdate-antigen.zshplugin
 
-apt_packages: [
-  fd-find,
-  tree,
-  dnsutils,
-  screen,
-  speedtest-cli,
-  whois,
-]
+apt_packages:
+  - fd-find
+  - tree
+  - dnsutils
+  - screen
+  - speedtest-cli
+  - whois
 
 # Container port mapping
 ########################
@@ -77,3 +76,34 @@ pihole_unbound_hosts:
   - 192.168.1.10: mbp
   - 192.168.1.11: iphone
   - 192.168.1.12: tv
+
+unbound_config:
+  - verbosity: 1
+    logfile: "/etc/unbound/unbound.log"
+    interface: 0.0.0.0
+    port: 53
+    do_ip4: "yes"
+    do_udp: "yes"
+    do_tcp: "yes"
+    do_ip6: "no"
+    prefer_ip6: "no"
+    root_hints: "/etc/unbound/root.hints"
+    harden_glue: "yes"
+    harden_dnssec_stripped: "yes"
+    auto_trust_anchor_file: "/etc/unbound/root.key"
+    use_caps_for_id: "yes"
+    unwanted_reply_threshold: 10000
+    val_clean_additional: "yes"
+    edns_buffer_size: 1472
+    prefetch: "yes"
+    cache_min_ttl: 3600
+    cache_max_ttl: 86400
+    so_rcvbuf: 1m
+    num_threads: 4
+    msg_cache_slabs: 8
+    rrset_cache_slabs: 8
+    infra_cache_slabs: 8
+    key_cache_slabs: 8
+    rrset_cache_size: 256m
+    msg_cache_size: 128m
+    access_control: 10.0.0.0/8 allow
