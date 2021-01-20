@@ -30,6 +30,9 @@
     - name: Cloudflare DDNS
       include: tasks/cloudflare_ddns.yml
 
+    - name: Gitlab
+      include: tasks/gitlab.yml
+
   post_tasks:
     - name: Post Install
       include: tasks/post_install.yml
