@@ -8,6 +8,7 @@
 
 ```sh
 git clone git@github.com:iamskok/rpi-home.git
-ansible-galaxy install -r requirements.yml
+ansible-galaxy role install -r roles.yml
+ansible-galaxy collection install -r collections.yml
 ansible-playbook -i inventory provision.yml
 ```
