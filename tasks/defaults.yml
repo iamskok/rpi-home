@@ -36,3 +36,8 @@
     regexp: "^PasswordAuthentication"
     line: "PasswordAuthentication no"
     state: present
+
+- name: Generate an OpenSSH keypair (4096 bits, rsa)
+  community.crypto.openssh_keypair:
+    path: "{{ ssh_key_path }}"
+    force: True
