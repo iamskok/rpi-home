@@ -14,3 +14,7 @@
   service:
     name: ssh
     state: restarted
+
+# - name: Remove temporary folder
+#   path: "{{ temp_path }}"
+#   state: absent

@@ -3,7 +3,10 @@
 ##################
 
 hostname: RPi01
+ssh_key_path: /root/.ssh/id_rsa
 containers_path: /home/pi/containers
+temp_path: /home/pi/temp
+gitlab_access_token_path: "{{ temp_path }}/gitlab-access-token"
 
 # Role environment variables
 ############################
@@ -40,6 +43,8 @@ apt_packages:
   - screen
   - speedtest-cli
   - whois
+  - nmap
+  - jq
 
 # Container port mapping
 ########################
@@ -53,7 +58,7 @@ portainer_http_port: 9000
 
 speedtest_analyser_cronjob_iteration: "60"
 
-cloudflare_ddns_api_key: "cloudflare-secret-token" # change me
+cloudflare_ddns_api_key: password12345 # change me
 cloudflare_ddns_zone: example.com
 cloudflare_ddns_subdomain: vpn
 cloudflare_ddns_cron: "*/1 * * * *"
@@ -67,15 +72,14 @@ pihole_unbound_custom_dns_records:
     ip: 192.168.1.32
 
 pihole_unbound_env:
-  - WEBPASSWORD: raspberry-password # change me
+  - WEBPASSWORD: raspberry # change me
     ServerIP: "{{ ansible_default_ipv4.address }}"
     REV_SERVER_CIDR: 192.168.0.0/16
     REV_SERVER_TARGET: 192.168.1.1
 
 pihole_unbound_hosts:
-  - 192.168.1.10: mbp
+  - 192.168.1.10: macbook
   - 192.168.1.11: iphone
-  - 192.168.1.12: tv
 
 unbound_config:
   - verbosity: 1
@@ -107,3 +111,28 @@ unbound_config:
     rrset_cache_size: 256m
     msg_cache_size: 128m
     access_control: 10.0.0.0/8 allow
+
+gitlab:
+  path: "{{ containers_path }}/gitlab"
+  env:
+    ROOT_PASSWORD: password12345
+    SHELL_SSH_PORT: 26
+    ENABLE_BOOTSNAP: 1
+  ports:
+    http: "9080:9080"
+    https: "9443:443"
+    ssh: "26:22"
+  omnibus:
+    external_url: "http://{{ ansible_default_ipv4.address }}:9080"
+    shell_ssh_port: 26
+  volumes:
+    config: "{{ containers_path }}/gitlab/config:/etc/gitlab"
+    logs: "{{ containers_path }}/gitlab/logs:/var/log/gitlab"
+    data: "{{ containers_path }}/gitlab/data:/var/opt/gitlab"
+  access_token:
+    host: "http://{{ ansible_default_ipv4.address }}:9080"
+    user: root
+    password: password12345 # change me
+    user_id: 1
+    ssh_key_title: "{{ inventory_hostname }}"
+    ssh_key_path: "~/.ssh/id_rsa.pub"

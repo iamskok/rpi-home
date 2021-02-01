@@ -1,0 +1,2 @@
+external_url {{ gitlab["omnibus"]["external_url"] | tojson | regex_replace('\"', '\'') }}
+gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab["omnibus"]["shell_ssh_port"] | int }}

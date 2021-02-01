@@ -1,7 +1,26 @@
 - name: Create Gitlab directory
   file:
-    path: "{{ containers_path }}/gitlab/"
+    path: "{{ gitlab[\"path\"] }}/"
     state: directory
+
+- name: Create `config` directory
+  file:
+    path: "{{ gitlab[\"path\"] }}/config"
+    state: directory
+
+- name: Template `gitlab.rb`
+  template:
+    src: templates/gitlab.rb.j2
+    dest: "{{ gitlab[\"path\"] }}/config/gitlab.rb"
+  vars:
+    envs: "{{ gitlab }}"
+
+- name: Template `gitlab_add_user_ssh_key.sh`
+  template:
+    src: templates/gitlab_add_user_ssh_key.sh.j2
+    dest: "{{ gitlab[\"path\"] }}/gitlab_add_user_ssh_key.sh"
+  vars:
+    envs: "{{ gitlab }}"
 
 - name: Start Gitlab service
   community.general.docker_container:
@@ -11,13 +30,32 @@
     container_default_behavior: compatibility
     state: started
     ports:
-      - 9080:9080
-      - 9443:443
+      - "{{ gitlab[\"ports\"][\"ssh\"] }}"
+      - "{{ gitlab[\"ports\"][\"http\"] }}"
+      - "{{ gitlab[\"ports\"][\"https\"] }}"
     volumes:
-      - ./config:/etc/gitlab
-      - ./logs:/var/log/gitlab
-      - ./data:/var/opt/gitlab
+      - "{{ gitlab[\"volumes\"][\"config\"] }}"
+      - "{{ gitlab[\"volumes\"][\"logs\"] }}"
+      - "{{ gitlab[\"volumes\"][\"data\"] }}"
     env:
-      GITLAB_ROOT_PASSWORD: gitlabgitlab
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url "http://192.168.1.30:9080"
+      GITLAB_ROOT_PASSWORD: "{{ gitlab[\"env\"][\"ROOT_PASSWORD\"] }}"
+      GITLAB_SHELL_SSH_PORT: "{{ gitlab[\"env\"][\"SHELL_SSH_PORT\"] }}"
+      ENABLE_BOOTSNAP: "{{ gitlab[\"env\"][\"ENABLE_BOOTSNAP\"] }}"
+
+- name: Wait for Gitlab to become healthy
+  shell: |
+    docker inspect --format=\{\{.State.Health.Status\}\} gitlab | \
+    grep -w "healthy" > /dev/null && \
+    exit 0 || exit 1
+  register: health_check
+  until: health_check.rc == 0
+  retries: 120
+  delay: 5
+
+- name: Add public SSH key for a Gitlab user
+  raw: "bash {{ gitlab[\"path\"] }}/gitlab_add_user_ssh_key.sh"
+
+- name: Delete `gitlab_add_user_ssh_key.sh` file
+  ansible.builtin.file:
+    path: "{{ gitlab[\"path\"] }}/gitlab_add_user_ssh_key.sh"
+    state: absent
