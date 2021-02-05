@@ -1,0 +1,64 @@
+# - clone repo
+# - template env + copy gitlab access token from a file
+# - template dockerfile
+
+- name: Git checkout `git-sync` project
+  git:
+    repo: "{{ git_sync[\"repo_url\"] }}"
+    dest: "{{ git_sync[\"path\"] }}"
+
+- name: Create `git-sync` directory
+  file:
+    path: "{{ git_sync[\"path\"] }}"
+    state: directory
+
+- name: Template `git-sync` env file
+  template:
+    src: templates/git_sync_env.j2
+    dest: "{{ git_sync[\"path\"] }}/.env"
+  vars:
+    envs: "{{ git_sync }}"
+
+- name: Fetch `GITLAB_ACCESS_TOKEN` from remote
+  ansible.builtin.slurp:
+    src: "{{ gitlab_access_token_path }}"
+  register: GITLAB_ACCESS_TOKEN
+
+- name: Add `GITLAB_ACCESS_TOKEN` to `.env` file
+  lineinfile:
+    dest: "{{ git_sync[\"path\"] }}/.env"
+    line: "GITLAB_ACCESS_TOKEN={{ GITLAB_ACCESS_TOKEN[\"content\"] | b64decode }}"
+    insertafter: EOF
+
+- name: Fetch public SSH key
+  ansible.builtin.slurp:
+    src: /root/.ssh/id_rsa.pub
+  register: public_ssh_key
+
+- name: Fetch private SSH key
+  ansible.builtin.slurp:
+    src: /root/.ssh/id_rsa
+  register: private_ssh_key
+
+- name: Build `git-sync` container
+  community.general.docker_image:
+    name: git-sync
+    source: build
+    build:
+      path: "{{ containers_path }}/git-sync/"
+      pull: no
+      args:
+        ssh_public_key: "{{ public_ssh_key[\"content\"] | b64decode }}"
+        ssh_private_key: "{{ private_ssh_key[\"content\"] | b64decode }}"
+
+- name: Run `git-sync` container
+  community.general.docker_container:
+    name: git-sync
+    image: git-sync
+    restart_policy: unless-stopped
+    container_default_behavior: compatibility
+    state: started
+    env_file: "{{ containers_path }}/git-sync/.env"
+    volumes:
+      - "{{ containers_path }}/git-sync/data:/app/data"
+

@@ -33,6 +33,9 @@
     - name: Gitlab
       include: tasks/gitlab.yml
 
+    - name: GitSync
+      include: tasks/git_sync.yml
+
   post_tasks:
     - name: Post Install
       include: tasks/post_install.yml

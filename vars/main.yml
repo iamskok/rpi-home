@@ -4,6 +4,11 @@
 
 hostname: RPi01
 ssh_key_path: /root/.ssh/id_rsa
+
+# ssh_key_directory_path: /root/.ssh
+# public_ssh_key_path: "{{ ssh_key_directory_path }}/id_rsa.pub"
+# private_ssh_key_path: "{{ ssh_key_directory_path }}/id_rsa"
+
 containers_path: /home/pi/containers
 temp_path: /home/pi/temp
 gitlab_access_token_path: "{{ temp_path }}/gitlab-access-token"
@@ -58,7 +63,7 @@ portainer_http_port: 9000
 
 speedtest_analyser_cronjob_iteration: "60"
 
-cloudflare_ddns_api_key: password12345 # change me
+cloudflare_ddns_api_key: cloudflareapikey # change me
 cloudflare_ddns_zone: example.com
 cloudflare_ddns_subdomain: vpn
 cloudflare_ddns_cron: "*/1 * * * *"
@@ -115,7 +120,7 @@ unbound_config:
 gitlab:
   path: "{{ containers_path }}/gitlab"
   env:
-    ROOT_PASSWORD: password12345
+    ROOT_PASSWORD: gitlabgitlab
     SHELL_SSH_PORT: 26
     ENABLE_BOOTSNAP: 1
   ports:
@@ -131,8 +136,30 @@ gitlab:
     data: "{{ containers_path }}/gitlab/data:/var/opt/gitlab"
   access_token:
     host: "http://{{ ansible_default_ipv4.address }}:9080"
-    user: root
-    password: password12345 # change me
+    user: "root"
+    password: "gitlabgitlab"
     user_id: 1
     ssh_key_title: "{{ inventory_hostname }}"
     ssh_key_path: "~/.ssh/id_rsa.pub"
+
+git_sync:
+  path: "{{ containers_path }}/git-sync"
+  repo_url: https://github.com/iamskok/git-sync
+  env:
+    REPO_BRANCHES: master,main
+    REPOS_PATH: data/repos
+    STATE_PATH: data/state.json
+    KNOWN_HOSTS_PATH: ~/.ssh/known_hosts
+    SYNC_TIME: 600
+    GITHUB_ACCESS_TOKEN: githubaccesstoken # change me
+    GITHUB_HANDLE: iamskok
+    GITHUB_KEY_TITLE: test
+    GITHUB_KEY_PATH: /root/.ssh/id_rsa.pub
+    GITHUB_URL: github.com
+    GITHUB_API_URL: https://api.github.com
+    GITLAB_HANDLE: root
+    GITLAB_URL: "{{ ansible_default_ipv4.address }}"
+    GITLAB_URL_PROTOCOL: http
+    GITLAB_SSH_PORT: 26
+    GITLAB_HTTP_PORT: 9080
+    GITLAB_REMOTE: gitlab

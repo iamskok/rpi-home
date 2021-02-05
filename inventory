@@ -2,7 +2,7 @@
 rpi01 ansible_host=192.168.1.30
 
 [pi:vars]
-ansible_user=pi
+ansible_user=root
 ansible_password=raspberry
 ansible_ssh_extra_args="-o StrictHostKeyChecking=no"
 ansible_python_interpreter=/usr/bin/python3

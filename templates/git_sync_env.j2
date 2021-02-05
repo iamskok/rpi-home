@@ -1,0 +1,4 @@
+{# File: /home/pi/containers/git-sync/.env #}
+{% for key, value in git_sync["env"].items() %}
+{{ key }}={{ value }}
+{% endfor %}
