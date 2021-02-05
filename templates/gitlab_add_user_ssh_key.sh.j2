@@ -45,7 +45,7 @@ ACCESS_TOKEN=$(
 )
 
 {# Write access token to a file so it can be used in other tasks #}
-echo $ACCESS_TOKEN >> {{ gitlab_access_token_path }}
+echo $ACCESS_TOKEN > {{ gitlab_access_token_path }}
 
 status_code=$(
   curl -s -o /dev/null -w "%{http_code}" \
